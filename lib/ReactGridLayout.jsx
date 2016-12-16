@@ -5,6 +5,7 @@ import {autoBindHandlers, bottom, childrenEqual, cloneLayoutItem, compact, getLa
   synchronizeLayoutWithChildren, validateLayout} from './utils';
 import GridItem from './GridItem';
 const noop = function() {};
+let settingInitialRatio = true;
 
 // Types
 import type {ResizeEvent, DragEvent, Layout, LayoutItem} from './utils';
@@ -84,6 +85,8 @@ export default class ReactGridLayout extends React.Component {
     isResizable: PropTypes.bool,
     // Use CSS transforms instead of top/left
     useCSSTransforms: PropTypes.bool,
+    // Keep the ratio of gridItems
+    lockedRatio: PropTypes.bool,
 
     //
     // Callbacks
@@ -136,6 +139,7 @@ export default class ReactGridLayout extends React.Component {
     isDraggable: true,
     isResizable: true,
     useCSSTransforms: true,
+    lockedRatio: false,
     verticalCompact: true,
     onLayoutChange: noop,
     onDragStart: noop,
@@ -154,6 +158,8 @@ export default class ReactGridLayout extends React.Component {
     oldDragItem: null,
     oldLayout: null,
     oldResizeItem: null,
+    colWidth: 1,
+    initialRatio: 1
   };
 
   constructor(props: $PropertyType<ReactGridLayout, 'props'>, context: any): void {
@@ -190,6 +196,22 @@ export default class ReactGridLayout extends React.Component {
       this.setState({layout: newLayout});
       this.onLayoutMaybeChanged(newLayout, oldLayout);
     }
+
+    if (this.props.lockedRatio) {
+      if(!isEqual(nextProps.width, this.props.width)){
+        const {cols, margin, containerPadding} = this.props;
+        const gridItemContainerPadding = containerPadding || margin;
+        const colWidth = (nextProps.width - (margin[0] * (cols - 1)) - (gridItemContainerPadding[0] * 2)) / cols;
+        this.setState({
+          colWidth: colWidth,
+        });
+        if (settingInitialRatio) {
+          const {rowHeight} = this.props;
+          this.state.initialRatio = colWidth / rowHeight;
+          settingInitialRatio = false;
+        }
+      }
+    }
   }
 
   /**
@@ -198,9 +220,10 @@ export default class ReactGridLayout extends React.Component {
    */
   containerHeight() {
     if (!this.props.autoSize) return;
+    const rowHeight = this.props.lockedRatio ? this.state.colWidth / this.state.initialRatio : this.props.rowHeight;
     const nbRow = bottom(this.state.layout);
     const containerPaddingY = this.props.containerPadding ? this.props.containerPadding[1] : this.props.margin[1];
-    return nbRow * this.props.rowHeight + (nbRow - 1) * this.props.margin[1] + containerPaddingY * 2 + 'px';
+    return nbRow * rowHeight + (nbRow - 1) * this.props.margin[1] + containerPaddingY * 2 + 'px';
   }
 
   /**
@@ -350,9 +373,9 @@ export default class ReactGridLayout extends React.Component {
    * @return {Element} Placeholder div.
    */
   placeholder(): ?React.Element<any> {
-    const {activeDrag} = this.state;
+    const {activeDrag, initialRatio} = this.state;
     if (!activeDrag) return null;
-    const {width, cols, margin, containerPadding, rowHeight, maxRows, useCSSTransforms} = this.props;
+    const {width, cols, margin, containerPadding, rowHeight, maxRows, useCSSTransforms, lockedRatio} = this.props;
 
     // {...this.state.activeDrag} is pretty slow, actually
     return (
@@ -369,6 +392,8 @@ export default class ReactGridLayout extends React.Component {
         containerPadding={containerPadding || margin}
         maxRows={maxRows}
         rowHeight={rowHeight}
+        lockedRatio={lockedRatio}
+        initialRatio={initialRatio}
         isDraggable={false}
         isResizable={false}
         useCSSTransforms={useCSSTransforms}>
@@ -388,8 +413,8 @@ export default class ReactGridLayout extends React.Component {
     if (!l) return null;
     const {width, cols, margin, containerPadding, rowHeight,
            maxRows, isDraggable, isResizable, useCSSTransforms,
-           draggableCancel, draggableHandle} = this.props;
-    const {mounted} = this.state;
+           draggableCancel, draggableHandle, lockedRatio} = this.props;
+    const {mounted, initialRatio} = this.state;
 
     // Parse 'static'. Any properties defined directly on the grid item will take precedence.
     const draggable = Boolean(!l.static && isDraggable && (l.isDraggable || l.isDraggable == null));
@@ -403,6 +428,8 @@ export default class ReactGridLayout extends React.Component {
         containerPadding={containerPadding || margin}
         maxRows={maxRows}
         rowHeight={rowHeight}
+        lockedRatio={lockedRatio}
+        initialRatio={initialRatio}
         cancel={draggableCancel}
         handle={draggableHandle}
         onDragStop={this.onDragStop}
