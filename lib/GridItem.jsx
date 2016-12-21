@@ -29,6 +29,7 @@ export default class GridItem extends React.Component {
     maxRows: PropTypes.number.isRequired,
     containerPadding: PropTypes.array.isRequired,
     lockedRatio: PropTypes.bool.isRequired,
+    fontSizeRatio: PropTypes.number.isRequired,
     initialRatio: PropTypes.number.isRequired,
 
     // These are all in grid units
@@ -97,6 +98,7 @@ export default class GridItem extends React.Component {
     maxH: Infinity,
     maxW: Infinity,
     lockedRatio: false,
+    fontSizeRatio: 0.0955,
     initialRatio: 1
   };
 
@@ -122,7 +124,7 @@ export default class GridItem extends React.Component {
    * @return {Object}                Object containing coords.
    */
   calcPosition(x: number, y: number, w: number, h: number, state: ?Object): Position {
-    const {margin, containerPadding, rowHeight, initialRatio, lockedRatio} = this.props;
+    const {margin, containerPadding, rowHeight, initialRatio, lockedRatio, fontSizeRatio} = this.props;
     const colWidth = this.calcColWidth();
 
     const out = {
@@ -139,6 +141,7 @@ export default class GridItem extends React.Component {
       const relativeRowHeight = colWidth * initialRatio;
       out.top = Math.ceil((relativeRowHeight + margin[1]) * y + containerPadding[1]);
       out.height = Math.ceil(relativeRowHeight * h + Math.max(0, h - 1) * margin[1]);
+      out.fontSize = Math.round(colWidth * fontSizeRatio);
     }
 
     if (state && state.resizing) {
@@ -230,6 +233,9 @@ export default class GridItem extends React.Component {
     // CSS Transforms support (default)
     if (useCSSTransforms) {
       style = setTransform(pos);
+      if(pos.fontSize){
+        style.fontSize = pos.fontSize;
+      }
     }
     // top,left (slow)
     else {

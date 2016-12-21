@@ -87,6 +87,8 @@ export default class ReactGridLayout extends React.Component {
     useCSSTransforms: PropTypes.bool,
     // Keep the ratio of gridItems
     lockedRatio: PropTypes.bool,
+    // calculated with the gridItem width
+    fontSizeRatio: PropTypes.number,
 
     //
     // Callbacks
@@ -140,6 +142,7 @@ export default class ReactGridLayout extends React.Component {
     isResizable: true,
     useCSSTransforms: true,
     lockedRatio: false,
+    fontSizeRatio: 0.0955,
     verticalCompact: true,
     onLayoutChange: noop,
     onDragStart: noop,
@@ -413,7 +416,7 @@ export default class ReactGridLayout extends React.Component {
     if (!l) return null;
     const {width, cols, margin, containerPadding, rowHeight,
            maxRows, isDraggable, isResizable, useCSSTransforms,
-           draggableCancel, draggableHandle, lockedRatio} = this.props;
+           draggableCancel, draggableHandle, lockedRatio, fontSizeRatio} = this.props;
     const {mounted, initialRatio} = this.state;
 
     // Parse 'static'. Any properties defined directly on the grid item will take precedence.
@@ -430,6 +433,7 @@ export default class ReactGridLayout extends React.Component {
         rowHeight={rowHeight}
         lockedRatio={lockedRatio}
         initialRatio={initialRatio}
+        fontSizeRatio={fontSizeRatio}
         cancel={draggableCancel}
         handle={draggableHandle}
         onDragStop={this.onDragStop}

@@ -30,8 +30,8 @@ class ShowcaseLayout extends React.Component {
       return (
         <div key={i} className={l.static ? 'static' : ''}>
           {l.static ?
-            <span className="text" title="This item is static and cannot be removed or resized.">Static - {i}</span>
-            : <span className="text">{i}</span>
+            <span className="text rwd" title="This item is static and cannot be removed or resized.">Static - {i}</span>
+            : <span className="text rwd">{i}</span>
           }
         </div>);
     });
