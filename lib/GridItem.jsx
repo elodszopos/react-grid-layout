@@ -28,9 +28,8 @@ export default class GridItem extends React.Component {
     margin: PropTypes.array.isRequired,
     maxRows: PropTypes.number.isRequired,
     containerPadding: PropTypes.array.isRequired,
-    lockedRatio: PropTypes.bool.isRequired,
+    lockedRatio: PropTypes.number.isRequired,
     fontSizeRatio: PropTypes.number.isRequired,
-    initialRatio: PropTypes.number.isRequired,
 
     // These are all in grid units
     x: PropTypes.number.isRequired,
@@ -97,9 +96,8 @@ export default class GridItem extends React.Component {
     minW: 1,
     maxH: Infinity,
     maxW: Infinity,
-    lockedRatio: false,
+    lockedRatio: 0,
     fontSizeRatio: 0.0955,
-    initialRatio: 1
   };
 
   state: State = {
@@ -124,7 +122,7 @@ export default class GridItem extends React.Component {
    * @return {Object}                Object containing coords.
    */
   calcPosition(x: number, y: number, w: number, h: number, state: ?Object): Position {
-    const {margin, containerPadding, rowHeight, initialRatio, lockedRatio, fontSizeRatio} = this.props;
+    const {margin, containerPadding, rowHeight, lockedRatio, fontSizeRatio} = this.props;
     const colWidth = this.calcColWidth();
 
     const out = {
@@ -138,7 +136,7 @@ export default class GridItem extends React.Component {
     };
 
     if (lockedRatio) {
-      const relativeRowHeight = colWidth * initialRatio;
+      const relativeRowHeight = colWidth * lockedRatio;
       out.top = Math.ceil((relativeRowHeight + margin[1]) * y + containerPadding[1]);
       out.height = Math.ceil(relativeRowHeight * h + Math.max(0, h - 1) * margin[1]);
       out.fontSize = Math.round(colWidth * fontSizeRatio);
@@ -164,7 +162,7 @@ export default class GridItem extends React.Component {
    * @return {Object} x and y in grid units.
    */
   calcXY(top: number, left: number): {x: number, y: number} {
-    const {margin, cols, rowHeight, w, h, maxRows, initialRatio, lockedRatio} = this.props;
+    const {margin, cols, rowHeight, w, h, maxRows, lockedRatio} = this.props;
     const colWidth = this.calcColWidth();
 
     // left = colWidth * x + margin * (x + 1)
@@ -178,7 +176,7 @@ export default class GridItem extends React.Component {
     let y = Math.round((top - margin[1]) / (rowHeight + margin[1]));
 
     if (lockedRatio) {
-      const relativeRowHeight = colWidth * initialRatio;
+      const relativeRowHeight = colWidth * lockedRatio;
       y = Math.ceil((top - margin[1]) / (relativeRowHeight + margin[1]));
     }
 
@@ -196,7 +194,7 @@ export default class GridItem extends React.Component {
    * @return {Object} w, h as grid units.
    */
   calcWH({height, width}: {height: number, width: number}): {w: number, h: number} {
-    const {margin, maxRows, cols, rowHeight, x, y, initialRatio, lockedRatio} = this.props;
+    const {margin, maxRows, cols, rowHeight, x, y, lockedRatio} = this.props;
     const colWidth = this.calcColWidth();
 
     // width = colWidth * w - (margin * (w - 1))
@@ -206,7 +204,7 @@ export default class GridItem extends React.Component {
     let h = Math.round((height + margin[1]) / (rowHeight + margin[1]));
 
     if (lockedRatio) {
-      const relativeRowHeight = colWidth * initialRatio;
+      const relativeRowHeight = colWidth * lockedRatio;
       h = Math.ceil((height + margin[1]) / (relativeRowHeight + margin[1]));
     }
 

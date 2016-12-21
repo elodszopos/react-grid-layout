@@ -5,7 +5,6 @@ import {autoBindHandlers, bottom, childrenEqual, cloneLayoutItem, compact, getLa
   synchronizeLayoutWithChildren, validateLayout} from './utils';
 import GridItem from './GridItem';
 const noop = function() {};
-let settingInitialRatio = true;
 
 // Types
 import type {ResizeEvent, DragEvent, Layout, LayoutItem} from './utils';
@@ -85,8 +84,8 @@ export default class ReactGridLayout extends React.Component {
     isResizable: PropTypes.bool,
     // Use CSS transforms instead of top/left
     useCSSTransforms: PropTypes.bool,
-    // Keep the ratio of gridItems
-    lockedRatio: PropTypes.bool,
+    // Keep the ratio of gridItems : calculated by height / width
+    lockedRatio: PropTypes.number,
     // calculated with the gridItem width
     fontSizeRatio: PropTypes.number,
 
@@ -141,7 +140,7 @@ export default class ReactGridLayout extends React.Component {
     isDraggable: true,
     isResizable: true,
     useCSSTransforms: true,
-    lockedRatio: false,
+    lockedRatio: 0,
     fontSizeRatio: 0.0955,
     verticalCompact: true,
     onLayoutChange: noop,
@@ -162,7 +161,6 @@ export default class ReactGridLayout extends React.Component {
     oldLayout: null,
     oldResizeItem: null,
     colWidth: 1,
-    initialRatio: 1
   };
 
   constructor(props: $PropertyType<ReactGridLayout, 'props'>, context: any): void {
@@ -208,11 +206,6 @@ export default class ReactGridLayout extends React.Component {
         this.setState({
           colWidth: colWidth,
         });
-        if (settingInitialRatio) {
-          const {rowHeight} = this.props;
-          this.state.initialRatio = rowHeight / colWidth;
-          settingInitialRatio = false;
-        }
       }
     }
   }
@@ -223,7 +216,7 @@ export default class ReactGridLayout extends React.Component {
    */
   containerHeight() {
     if (!this.props.autoSize) return;
-    const rowHeight = this.props.lockedRatio ? this.state.colWidth * this.state.initialRatio : this.props.rowHeight;
+    const rowHeight = this.props.lockedRatio ? this.state.colWidth * this.props.lockedRatio : this.props.rowHeight;
     const nbRow = bottom(this.state.layout);
     const containerPaddingY = this.props.containerPadding ? this.props.containerPadding[1] : this.props.margin[1];
     return nbRow * rowHeight + (nbRow - 1) * this.props.margin[1] + containerPaddingY * 2 + 'px';
@@ -376,9 +369,9 @@ export default class ReactGridLayout extends React.Component {
    * @return {Element} Placeholder div.
    */
   placeholder(): ?React.Element<any> {
-    const {activeDrag, initialRatio} = this.state;
+    const {activeDrag} = this.state;
     if (!activeDrag) return null;
-    const {width, cols, margin, containerPadding, rowHeight, maxRows, useCSSTransforms, lockedRatio} = this.props;
+    const {width, cols, margin, containerPadding, rowHeight, maxRows, useCSSTransforms, lockedRatio, fontSizeRatio} = this.props;
 
     // {...this.state.activeDrag} is pretty slow, actually
     return (
@@ -396,7 +389,7 @@ export default class ReactGridLayout extends React.Component {
         maxRows={maxRows}
         rowHeight={rowHeight}
         lockedRatio={lockedRatio}
-        initialRatio={initialRatio}
+        fontSizeRatio={fontSizeRatio}
         isDraggable={false}
         isResizable={false}
         useCSSTransforms={useCSSTransforms}>
@@ -417,7 +410,7 @@ export default class ReactGridLayout extends React.Component {
     const {width, cols, margin, containerPadding, rowHeight,
            maxRows, isDraggable, isResizable, useCSSTransforms,
            draggableCancel, draggableHandle, lockedRatio, fontSizeRatio} = this.props;
-    const {mounted, initialRatio} = this.state;
+    const {mounted} = this.state;
 
     // Parse 'static'. Any properties defined directly on the grid item will take precedence.
     const draggable = Boolean(!l.static && isDraggable && (l.isDraggable || l.isDraggable == null));
@@ -432,7 +425,6 @@ export default class ReactGridLayout extends React.Component {
         maxRows={maxRows}
         rowHeight={rowHeight}
         lockedRatio={lockedRatio}
-        initialRatio={initialRatio}
         fontSizeRatio={fontSizeRatio}
         cancel={draggableCancel}
         handle={draggableHandle}
