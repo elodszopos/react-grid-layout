@@ -97,7 +97,7 @@ export default class GridItem extends React.Component {
     maxH: Infinity,
     maxW: Infinity,
     lockedRatio: 0,
-    fontSizeRatio: 0.0955,
+    fontSizeRatio: 1 / 20,
   };
 
   state: State = {
@@ -122,7 +122,7 @@ export default class GridItem extends React.Component {
    * @return {Object}                Object containing coords.
    */
   calcPosition(x: number, y: number, w: number, h: number, state: ?Object): Position {
-    const {margin, containerPadding, rowHeight, lockedRatio, fontSizeRatio} = this.props;
+    const {margin, containerPadding, rowHeight, lockedRatio} = this.props;
     const colWidth = this.calcColWidth();
 
     const out = {
@@ -139,7 +139,6 @@ export default class GridItem extends React.Component {
       const relativeRowHeight = colWidth * lockedRatio;
       out.top = Math.ceil((relativeRowHeight + margin[1]) * y + containerPadding[1]);
       out.height = Math.ceil(relativeRowHeight * h + Math.max(0, h - 1) * margin[1]);
-      out.fontSize = Math.round(colWidth * fontSizeRatio);
     }
 
     if (state && state.resizing) {
@@ -225,15 +224,12 @@ export default class GridItem extends React.Component {
    * @return {Object}     Style object.
    */
   createStyle(pos: Position): {[key: string]: ?string} {
-    const {usePercentages, containerWidth, useCSSTransforms} = this.props;
+    const {usePercentages, containerWidth, useCSSTransforms, lockedRatio, fontSizeRatio} = this.props;
 
     let style;
     // CSS Transforms support (default)
     if (useCSSTransforms) {
       style = setTransform(pos);
-      if(pos.fontSize){
-        style.fontSize = pos.fontSize;
-      }
     }
     // top,left (slow)
     else {
@@ -244,6 +240,9 @@ export default class GridItem extends React.Component {
         style.left = perc(pos.left / containerWidth);
         style.width = perc(pos.width / containerWidth);
       }
+    }
+    if (lockedRatio) {
+      style.fontSize = `${Math.round(pos.width * fontSizeRatio)}px`;
     }
 
     return style;

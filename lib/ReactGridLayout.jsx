@@ -141,7 +141,7 @@ export default class ReactGridLayout extends React.Component {
     isResizable: true,
     useCSSTransforms: true,
     lockedRatio: 0,
-    fontSizeRatio: 0.0955,
+    fontSizeRatio: 1 / 20,
     verticalCompact: true,
     onLayoutChange: noop,
     onDragStart: noop,

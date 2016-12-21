@@ -61,7 +61,7 @@ class ShowcaseLayout extends React.Component {
           // I like to have it animate on mount. If you don't, delete `useCSSTransforms` (it's default `true`)
           // and set `measureBeforeMount={true}`.
           useCSSTransforms={this.state.mounted}
-          lockedRatio={0.5625}
+          lockedRatio={9 / 16}
         >
           {this.generateDOM()}
         </ResponsiveReactGridLayout>
