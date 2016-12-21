@@ -136,7 +136,7 @@ export default class GridItem extends React.Component {
     };
 
     if (lockedRatio) {
-      const relativeRowHeight = colWidth * lockedRatio;
+      const relativeRowHeight = colWidth / lockedRatio;
       out.top = Math.ceil((relativeRowHeight + margin[1]) * y + containerPadding[1]);
       out.height = Math.ceil(relativeRowHeight * h + Math.max(0, h - 1) * margin[1]);
     }
@@ -175,7 +175,7 @@ export default class GridItem extends React.Component {
     let y = Math.round((top - margin[1]) / (rowHeight + margin[1]));
 
     if (lockedRatio) {
-      const relativeRowHeight = colWidth * lockedRatio;
+      const relativeRowHeight = colWidth / lockedRatio;
       y = Math.ceil((top - margin[1]) / (relativeRowHeight + margin[1]));
     }
 
@@ -203,7 +203,7 @@ export default class GridItem extends React.Component {
     let h = Math.round((height + margin[1]) / (rowHeight + margin[1]));
 
     if (lockedRatio) {
-      const relativeRowHeight = colWidth * lockedRatio;
+      const relativeRowHeight = colWidth / lockedRatio;
       h = Math.ceil((height + margin[1]) / (relativeRowHeight + margin[1]));
     }
 
